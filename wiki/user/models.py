@@ -20,6 +20,8 @@ class UserProfile(models.Model):
     #wiki/media/avatar
     avatar = models.ImageField(upload_to='avatar',default='',verbose_name='头像')
     login_time = models.DateTimeField(null=True,verbose_name='登录时间')
+    #添加测试字段
+    score = models.IntegerField(verbose_name='分数',null=True,default=0)
 
     def __str__(self):
         return self.nickname
