@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>微博授权</title>
+</head>
+<body>
+</body>
+<script src="/static/js/jquery.min.js"></script>
+<script>
+    function getQueryString(v){
+        var query = window.location.search.substring(1);
+        var data = query.split('&');
+        for (var i=0;i<data.length;i++){
+            // state=123
+            var par = data[i].split('=');
+            // [state,123]
+            if (par[0] == v){
+                return par[1]
+            }
+        }
+        return null
+    }
+
+    $(function(){
+        var code = getQueryString('code');
+        console.log(code);
+
+        $.ajax({
+            type:'get',
+            dataType:'json',
+            url:'http://127.0.0.1:8000/v1/users/weibo/token?code=' + code,
+            success:function(result){
+                console.log(result)
+                // 已经在博客上注册过
+                if (result == 200){
+                    // 走正常流程
+                    window.localStorage.setItem('dnblog_token', result.data.token);
+                    window.localStorage.setItem('dnblog_user', result.username);
+                    window.location =  '/' + result.username + '/topics';
+                }else if(result.code == 10999){
+                    //还未在博客网站 注册过 10999弹到注册页面进行注册
+                    var wuid = result.wuid;
+                    window.location = '/register?wuid=' + wuid;
+                }
+            }
+        })
+    })
+</script>
+</html>

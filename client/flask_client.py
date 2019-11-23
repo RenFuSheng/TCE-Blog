@@ -51,6 +51,11 @@ def topics_detail(username, t_id):
     #博客内容详情
     return send_file('templates/detail.html')
 
+@app.route('/login_callback')
+def login_callback():
+    #微博授权成功后的回调地址
+    return send_file('templates/login_callback.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -58,12 +58,28 @@ A ny individuals and organizations and not for commercial use, professiona websi
 
 
     <script>
+  		function getQueryString(v){
+        var query = window.location.search.substring(1);
+        var data = query.split('&');
+        for (var i=0;i<data.length;i++){
+            // state=123
+            var par = data[i].split('=');
+            // [state,123]
+            if (par[0] == v){
+                return par[1]
+            }
+        }
+        return null
+    }
+
         function regist(){
         var username = $('.username').val()
         var email = $('.email').val()
         var password_1 = $('.password_1').val()
         var password_2 = $('.password_2').val()
-        var post_data = {'username':username, 'email':email, 'password_1':password_1, 'password_2':password_2}
+        var wuid = getQueryString('wuid')
+        var post_data = {'username':username, 'email':email, 'password_1':password_1, 'password_2':password_2,
+        'wuid':wuid}
 
         $.ajax({
         // 请求方式
@@ -88,8 +104,9 @@ A ny individuals and organizations and not for commercial use, professiona websi
             }
         }
     });
-
     }
+
+
 
     </script>
 

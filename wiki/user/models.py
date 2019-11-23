@@ -30,3 +30,12 @@ class UserProfile(models.Model):
         db_table = "user_profile"
         verbose_name = "用户"
         verbose_name_plural = verbose_name
+
+class WeiboUser(models.Model):
+    wuid = models.CharField(max_length=50,db_index=True)
+    access_token = models.CharField(max_length=200,db_index=True)
+    buser = models.OneToOneField(UserProfile,null=True)
+
+    class Meta:
+        db_table = 'user_weibo'
+

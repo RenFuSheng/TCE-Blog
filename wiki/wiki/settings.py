@@ -160,3 +160,12 @@ APPEND_SLASH = False
 MEDIA_ROOT = os.path.join(BASE_DIR,'media')
 #浏览器 访问文件的地址 http：//127.0.0.1:8000/media/....
 MEDIA_URL = '/media/'
+
+#高级信息
+#授权回调页： http://127.0.0.1:5000/login_callback
+#取消授权回调页：http://127.0.0.1:5000/login_callback
+WEIBO_CLIENT_ID = '2404219531'
+WEIBO_CLIENT_SECRET = '4b7997cbedde2bacb02dc8547b0632b2'
+REDIRECT_URI = 'http://127.0.0.1:5000/login_callback'
+
+#http://127.0.0.1:5000/login_callback?state=123&code=372231b63e6259c11e0d76625722aa96

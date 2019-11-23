@@ -1,14 +1,16 @@
+import datetime
 import json, hashlib
 import time
 
 import jwt
+from django.db import transaction
 from django.http import JsonResponse
 
 from wtoken.views import make_token
-from .models import UserProfile
+from .models import UserProfile, WeiboUser
 from django.shortcuts import render
 from tools.logging_check import logging_check
-
+from .weiboapi import OAuthWeibo
 # Create your views here.
 @logging_check('PUT')
 def users(request, username=None):
@@ -82,9 +84,18 @@ def users(request, username=None):
         pm = hashlib.md5()
         pm.update(password1.encode())
         password = pm.hexdigest()
+
+        wuid = json_obj.get('wuid')
         # 创建用户
         try:
-            user = UserProfile.objects.create(username=username, email=email, password=password, nickname=username)
+            with transaction.atomic():
+                new_user = UserProfile.objects.create(username=username, email=email, password=password,
+                                                    nickname=username)
+                if wuid:
+                    w_obj = WeiboUser.objects.get(wuid=wuid)
+                    #绑定微博用户和博客用户
+                    w_obj.buser = new_user
+                    w_obj.save()
         except Exception as e:
             print('---create error---')
             print(e)
@@ -92,7 +103,8 @@ def users(request, username=None):
             return JsonResponse(result)
 
         # 生成token
-        token = make_token(username, 3600 * 24)
+        now = datetime.datetime.now()
+        token = make_token(username, 3600 * 24,now)
         result = {'code': 200, 'data': {'token': token.decode()}, 'username': username}
 
         return JsonResponse(result)
@@ -146,4 +158,35 @@ def users_avatar(request,username):
     user.save()
     return JsonResponse({'code':200,'username':username})
 
+def users_weibo_url(request):
+    oauth = OAuthWeibo('123')
+    oauth_weibo_url = oauth.get_weibo_login()
+    return JsonResponse({'code':200,'oauth_url':oauth_weibo_url})
 
+def users_weibo_token(request):
+    #接收 前端返回的code 并 去微博校验
+    code = request.GET.get('code')
+    oauth = OAuthWeibo()
+    #向微博服务器提交code，若校验成功 返回该用户的token
+    res = oauth.get_access_token_uid(code)
+    res_obj = json.loads(res)
+    access_token = res_obj['access_token']
+    uid = res_obj['uid']
+
+    #检查当前这个用户是否注册过我们博客
+    try:
+        bu = WeiboUser.objects.get(wuid=uid)
+    except:
+        #用户第一次 用微博账号登录
+
+        WeiboUser.objects.create(wuid=uid,access_token=access_token)
+        return JsonResponse({'code':10999,'wuid':uid})
+    else:
+        #检查是否真的绑定过
+        buser = bu.buser
+        if not buser:
+            return JsonResponse({'code':10999,'wuid':uid})
+        #生成token
+        now = datetime.datetime.now()
+        token = make_token(buser.username,3600*24,now)
+        return JsonResponse({'code':200,'username':buser.username,'data':{'token':token.decode()}})

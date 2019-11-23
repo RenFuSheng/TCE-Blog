@@ -26,6 +26,7 @@ A ny individuals and organizations and not for commercial use, professiona websi
 				<h2>Login:</h2>
 				<li><input type="text" class="username" name="username" placeholder="Username" required/></li>
 				<li><input type="password" class="password" name="password" placeholder="Password" required/></li>
+				<li><span onclick="weibo()">微博登录</span></li>
 				<input type="button" value="登录" onclick="login()">
 				<div class="clear"> </div>
 			</ul>
@@ -77,6 +78,24 @@ A ny individuals and organizations and not for commercial use, professiona websi
     });
 
     }
+
+    function weibo(){
+    	$.ajax({
+    		type:'get',
+    		dataType:'json',
+    		url:'http://127.0.0.1:8000/v1/users/weibo/url',
+    		success:function(result){
+    			if (result.code == 200){
+    				console.log(result);
+    				window.location = result.oauth_url;
+    			}else{
+    				alert('Get weibo url error')
+    			}
+    		}
+
+    	})
+    }
+
     </script>
 
 </html>
